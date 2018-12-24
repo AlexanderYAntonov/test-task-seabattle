@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
 import './App.css';
+import {Field} from './components/Field.js';
 
 const DOT_SHIP_SIZE = 1;
 const SQUARE_SHIP_SIZE = 4;
@@ -146,24 +146,23 @@ class Playground {
 	setShipsOnField(){
 		this.cleanField();
 		//fix thisplace to forEach
-		for (let s = 0; s < this.ships.length; s++) {
-			const item = this.ships[s];
-			console.log('Got ship ', item);
+		//for (let s = 0; s < this.ships.length; s++) {
+			//const item = this.ships[s];
+		this.ships.forEach(item => {
 			const {x, y} = this.findPlaceForShip(item);
 			
 			let width = item.getWidth();
 			let height = item.getHeight();
-			console.log('width, height', width, height);
 			
 			for (let j = 0; j < width; j++) {
 				for (let i =0; i < height; i++) {
-					console.log('shape[',i,'][',j,']=',item.shape[i][j]);
 					if (item.shape[i][j]) {
 						this.field[x + i][y + j] += item.shape[i][j];
 					}
 				}
 			}
-		}	
+		});
+		//}	
 	}
 	
 	getField(){
@@ -171,9 +170,17 @@ class Playground {
 	}
 }
 
+
 class App extends Component {
 
-	renderApp = () => {
+	state = {
+		name1 : 'T-800',
+		name2 : 'Human',
+		field1 : '',
+		field2 : ''
+	};
+	
+	onClickStartButton = () => {
 		const someShip = new TriangleShip();
 		const field = new Playground(10, 10);
 		field.addShip(someShip);
@@ -181,30 +188,42 @@ class App extends Component {
 		field.addShip(ship2);
 		const ship3 = new LineShip(3);
 		field.addShip(ship3);
-		console.log('ships = ', field.getShips());
 		field.setShipsOnField();
-		console.log('field = ', field.getField());
+		this.setState({field1:field.getField()});
+		
+		const ship4 = new TriangleShip();
+		const field2 = new Playground(10, 10);
+		field2.addShip(ship4);
+		const ship5 = new DotShip();
+		field2.addShip(ship5);
+		const ship6 = new LineShip(2);
+		field2.addShip(ship6);
+		field2.setShipsOnField();
+		this.setState({field2:field2.getField()});
 		
 	}
+	
 	
   render() {
     return (
       <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-loconsgo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-            {this.renderApp()}
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
+		<header className='App__header'>Battleships</header>  
+        <div onClick={this.onClickStartButton} className='App__start_button'>Start</div>
+		
+		<div className='App__main'>
+			<div className='App__playground'>
+				<div className='App__player_name'>{this.state.name1}</div>
+				{this.state.field1 &&
+					<Field data={this.state.field1}/>
+				}
+			</div>
+			<div className='App__playground'>
+				<div className='App__playerName'>{this.state.name2}</div>
+				{this.state.field2 &&
+					<Field data={this.state.field2}/>
+				}
+			</div>
+		</div>  
       </div>
     );
   }
