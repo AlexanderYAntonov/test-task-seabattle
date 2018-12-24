@@ -14,9 +14,9 @@ class Field extends React.Component {
 			const height = data.length;
 			for (let i =0; i < height; i++)
 			{
-				fieldTemplate[i] = [];
 				for (let j = 0; j < width; j++) {
-					fieldTemplate[i][j] = <Element data={data[i][j]} /> 
+					const id = this.props.field * 1000 + i*10 + j;
+					fieldTemplate.push(<Element key={id} data={data[i][j]} />);
 				}
 			}
 		} else {
@@ -34,7 +34,8 @@ class Field extends React.Component {
 
 
 Field.propTypes = {
-    data:PropTypes.array.isRequired
+    data:PropTypes.array.isRequired,
+	field:PropTypes.number.isRequired
 }
 
 export {Field};

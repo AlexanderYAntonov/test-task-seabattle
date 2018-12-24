@@ -214,13 +214,13 @@ class App extends Component {
 			<div className='App__playground'>
 				<div className='App__player_name'>{this.state.name1}</div>
 				{this.state.field1 &&
-					<Field data={this.state.field1}/>
+					<Field data={this.state.field1} field={1}/>
 				}
 			</div>
 			<div className='App__playground'>
 				<div className='App__playerName'>{this.state.name2}</div>
 				{this.state.field2 &&
-					<Field data={this.state.field2}/>
+					<Field data={this.state.field2} field={2}/>
 				}
 			</div>
 		</div>  
