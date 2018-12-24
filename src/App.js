@@ -21,6 +21,7 @@ class Ship {
         return this.size;
     }
 	
+	//set ship alive status to false
 	destroyShip() {
 		this.isAlive = false;
 	}
@@ -118,6 +119,7 @@ class Playground {
 		this.width = width;
 		this.height = height;
 		this.ships = [];
+		this.field = [];
 	}
 	
 	getShips(){
@@ -126,6 +128,46 @@ class Playground {
 	
 	addShip(ship){
 		this.ships.push(ship);
+	}
+	
+	findPlaceForShip(ship){
+		return {x:Math.floor(Math.random()*7),y:Math.floor(Math.random()*7)};
+	}
+	
+	cleanField(){
+		for (let i = 0; i < this.width; i++) {
+			this.field[i] = [];
+			for (let j =0; j < this.height; j++) {
+				this.field[i][j] = 0;
+			}
+		}
+	}
+	
+	setShipsOnField(){
+		this.cleanField();
+		//fix thisplace to forEach
+		for (let s = 0; s < this.ships.length; s++) {
+			const item = this.ships[s];
+			console.log('Got ship ', item);
+			const {x, y} = this.findPlaceForShip(item);
+			
+			let width = item.getWidth();
+			let height = item.getHeight();
+			console.log('width, height', width, height);
+			
+			for (let j = 0; j < width; j++) {
+				for (let i =0; i < height; i++) {
+					console.log('shape[',i,'][',j,']=',item.shape[i][j]);
+					if (item.shape[i][j]) {
+						this.field[x + i][y + j] += item.shape[i][j];
+					}
+				}
+			}
+		}	
+	}
+	
+	getField(){
+		return this.field;
 	}
 }
 
@@ -139,7 +181,9 @@ class App extends Component {
 		field.addShip(ship2);
 		const ship3 = new LineShip(3);
 		field.addShip(ship3);
-		console.log(field.getShips());
+		console.log('ships = ', field.getShips());
+		field.setShipsOnField();
+		console.log('field = ', field.getField());
 		
 	}
 	
