@@ -303,76 +303,141 @@ class Playground {
 class App extends Component {
 
 	state = {
-		name1 : 'T-800',
-		name2 : 'Human',
+		name1 : '',
+		name1Status: true,
+		name2 : '',
+		name2Status: true,
 		field1 : '',
-		field2 : ''
+		field2 : '',
+		gameStarted: false
 	};
 	
-	initPlayground(field){
-		
+	//validate player's names
+	validate = () => {
+		let error = 0;
+        let {name1, name2} = this.state;
+        name1 = name1.trim();
+        name2 = name2.trim();
+        
+        if (!name1) {
+            this.setState({name1Status: false});
+            error += 1;
+        } else {
+            this.setState({name1Status: true});
+        }
+        
+        if (!name2) {
+            this.setState({name2Status: false});
+            error += 2;
+        } else {
+            this.setState({name2Status: true});
+        }
+        if (error > 0) return false;
+		return true;
 	}
-	
 
-	onClickStartButton = () => {
-		const field1 = new Playground(PLAYGROUND_WIDTH, PLAYGROUND_HEIGHT);
+	initPlayground(field, id){
+		
 		const ship1 = new LineShip(5);
-		field1.addShip(ship1);
+		field.addShip(ship1);
 		const ship2 = new TriangleShip();
-		field1.addShip(ship2);
+		field.addShip(ship2);
 		const ship3 = new SquareShip();
-		field1.addShip(ship3);
+		field.addShip(ship3);
 		
 		let threeCellsShipsArr = [];
 		for (let i = 0; i < 3; i++) {
 			threeCellsShipsArr.push(new LineShip(3));
-			field1.addShip(threeCellsShipsArr[i]);
+			field.addShip(threeCellsShipsArr[i]);
 		}
 		
 		let twoCellsShipsArr = [];
 		for (let i = 0; i < 4; i++) {
 			twoCellsShipsArr.push(new LineShip(2));
-			field1.addShip(twoCellsShipsArr[i]);
+			field.addShip(twoCellsShipsArr[i]);
 		}
 		
 		let dotShipsArr = [];
 		for (let i = 0; i < 5; i++) {
 			dotShipsArr.push(new DotShip());
-			field1.addShip(dotShipsArr[i]);
+			field.addShip(dotShipsArr[i]);
 		}
 		
-		if (!field1.setShipsOnField()) {
+		if (!field.setShipsOnField()) {
 			console.log('No space for Dot Ship');
 		}
-		this.setState({field1:field1.getField()});
+		this.setState({[id]: field.getField()});
+		this.setState({gameStarted: true});
+	}
+	
+	//validate names and place ships
+	onClickStartButton = () => {
 		
+		if (!this.validate()) return false;
+		
+		const field1 = new Playground(PLAYGROUND_WIDTH, PLAYGROUND_HEIGHT);
+		this.initPlayground(field1, 'field1');
+		
+		const field2 = new Playground(PLAYGROUND_WIDTH, PLAYGROUND_HEIGHT);
+		this.initPlayground(field2, 'field2');
 		
 		
 	}
 	
+	handleChange = (event) => {
+        const {id, value} = event.currentTarget;
+        //console.log(event.currentTarget)
+        //console.log(id, value);
+        this.setState({[id]: value});
+        //console.log(this.state);
+    }
 	
-  render() {
-    return (
-      <div className="App">
-		<header className='App__header'>Battleships</header>  
-        <div onClick={this.onClickStartButton} className='App__start_button'>Start</div>
-		
-		<div className='App__main'>
-			<div className='App__playground'>
-				<div className='App__player_name'>{this.state.name1}</div>
-				{this.state.field1 &&
-					<Field data={this.state.field1} field={1}/>
-				}
-			</div>
-			<div className='App__playground'>
-				<div className='App__playerName'>{this.state.name2}</div>
-				{this.state.field2 &&
-					<Field data={this.state.field2} field={2}/>
-				}
-			</div>
-		</div>  
-      </div>
-    );
+  	render() {
+		const {name1, name2, name1Status, name2Status, field1, field2, gameStarted} = this.state;
+		return (
+		  <div className="App">
+			<header className='App__header'>Battleships</header> 
+			
+			<div onClick={this.onClickStartButton} className='App__start_button'>Start</div>
+			
+			<div className='App__main'>
+				<div className='App__playground'>
+					{!gameStarted &&
+						<input 
+							type='text'
+							id = 'name1'
+							className={(name1Status && 'App__player_name_input') || (!name1Status && 'App__player_name_input_error')}
+							value = {name1}
+							onChange = {this.handleChange}
+							autoFocus={true}
+							placeholder='Bot name'
+						/>
+					}
+					{gameStarted && <div className='App__player_name'>{name1}</div>}
+					{field1 &&
+						<Field data={field1} field={1}/>
+					}
+				</div>
+				
+				<div className='App__playground'>
+					{!gameStarted &&
+						<input 
+							type='text'
+							id = 'name2'
+							className={(name2Status && 'App__player_name_input') || (!name2Status && 'App__player_name_input_error')}
+							value = {name2}
+							onChange = {this.handleChange}
+							placeholder='Player name'
+						/>
+					}
+					{gameStarted && <div className='App__player_name'>{name2}</div>}
+					{field2 &&
+						<Field data={field2} field={2}/>
+					}
+				</div>
+			</div>  
+		  </div>
+		);
   }
 }
 
