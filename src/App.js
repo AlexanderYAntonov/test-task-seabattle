@@ -5,6 +5,9 @@ import {Field} from './components/Field.js';
 const DOT_SHIP_SIZE = 1;
 const SQUARE_SHIP_SIZE = 4;
 const TRIANGLE_SHIP_SIZE = 4;
+const PLAYGROUND_WIDTH = 10;
+const PLAYGROUND_HEIGHT = 10;
+
 
 class Ship {
     constructor(size) {
@@ -122,6 +125,14 @@ class Playground {
 		this.field = [];
 	}
 	
+	getWidth(){
+		return this.width;
+	}
+	
+	getHeight(){
+		return this.height;
+	}
+	
 	getShips(){
 		return this.ships;
 	}
@@ -130,8 +141,87 @@ class Playground {
 		this.ships.push(ship);
 	}
 	
+	//returns true if there is something
+	//in nearby cells
+	checkArea(y, x){
+		let i = 0;
+		let j = 0;
+		
+		if (y < 0 || y > this.height || x < 0 || x > this.width) {
+			//out of field
+			return true;
+		}
+		
+		j = x;
+		for (i = y-1; i <= y+1; i++) {
+			if (i >= 0 && i < this.height){ 
+				if (this.field[i][j] !== 0) {
+					return true;
+				}
+			}
+		}
+		
+		i = y;
+		
+		for (j = x-1; j <= x+1; j++) {
+			if (j >= 0 && j < this.width 
+				&& this.field[i][j] !== 0) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	//check if can place ship
+	//with left-top corner coordinates x,y
+	checkCell(ship, y, x){
+		//ship parameters
+		const shipShape = ship.getShape();
+		const shipWidth = ship.getWidth();
+		const shipHeight = ship.getHeight();
+		
+		for (let i = 0; i < shipHeight; i++) {
+			for (let j = 0; j < shipWidth; j++) {
+				if (shipShape[i][j] !== 0 &&
+					this.checkArea(i + y, j + x)) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+	
+	//find random good place to set ship
+	//if there is no enough space - returns {i:-1;j:-1}
+	
 	findPlaceForShip(ship){
-		return {x:Math.floor(Math.random()*7),y:Math.floor(Math.random()*7)};
+		const width = ship.getWidth();
+		const height = ship.getHeight();
+		//max possible value for left-top ship corner
+		const maxX = this.getWidth() - width + 1;
+		const maxY = this.getHeight() - height + 1;
+		let goodCells = [];
+		
+		//get all good cells for setting ship
+		for (let i =0; i < maxY; i++){
+			for (let j = 0; j < maxX; j++){
+				if (this.checkCell(ship, i, j)) {
+					goodCells.push({i:i, j:j});
+				}
+			}
+		}
+		
+		//default value for bad result
+		let randomCell = {i:-1, j:-1};
+		
+		if (goodCells.length) {
+			randomCell = goodCells[
+				Math.floor(Math.random()*
+				goodCells.length)];
+		}
+		//console.log(goodCells);
+		
+		return randomCell;
 	}
 	
 	cleanField(){
@@ -143,28 +233,67 @@ class Playground {
 		}
 	}
 	
+	//set all ships from ships[] on field
+	//if there is no good way - returns false
+	//if ships set OK - returns true
 	setShipsOnField(){
 		this.cleanField();
-		//fix thisplace to forEach
-		//for (let s = 0; s < this.ships.length; s++) {
-			//const item = this.ships[s];
+		
 		this.ships.forEach(item => {
-			const {x, y} = this.findPlaceForShip(item);
+			//find place for ship
+			const {i, j} = this.findPlaceForShip(item);
+			if (i === -1 || j === -1) return false;
 			
 			let width = item.getWidth();
 			let height = item.getHeight();
 			
-			for (let j = 0; j < width; j++) {
-				for (let i =0; i < height; i++) {
-					if (item.shape[i][j]) {
-						this.field[x + i][y + j] += item.shape[i][j];
+			//place ship
+			for (let j1 = 0; j1 < width; j1++) {
+				for (let i1 =0; i1 < height; i1++) {
+					if (item.shape[i1][j1] !== 0) {
+						this.field[i + i1][j + j1] += item.shape[i1][j1];
 					}
 				}
 			}
 		});
-		//}	
+		return true;
 	}
 	
+	//test only
+	//-------------------------------
+	placeShipXY(ship, x, y){
+		let width = ship.getWidth();
+		let height = ship.getHeight();
+		
+		this.cleanField();
+		
+		if (this.checkCell(ship, y, x)) {
+		
+			for (let i = 0; i < height; i++) {
+				for (let j = 0; j < width; j++) {
+					this.field[i+y][j+x] = ship.shape[i][j]; 
+				}
+			}
+		}
+			
+	}
+	
+	checkDotShipAddition() {
+		const ship = new DotShip();
+		this.placeShipXY(ship, 3, 3);
+		const ship2 = new DotShip();
+		console.log('up-left ',this.checkCell(ship2, 2, 2));
+		console.log('up ',this.checkCell(ship2, 2, 3));
+		console.log('up-right ',this.checkCell(ship2, 2, 4));
+		console.log('left ',this.checkCell(ship2, 3, 2));
+		console.log('center ',this.checkCell(ship2, 3, 3));
+		console.log('right ',this.checkCell(ship2, 3, 4));
+		console.log('down-left ',this.checkCell(ship2, 4, 2));
+		console.log('down ',this.checkCell(ship2, 4, 3));
+		console.log('down-right ',this.checkCell(ship2, 4, 4));
+		
+	}
+	//-----------------------------
 	getField(){
 		return this.field;
 	}
@@ -180,26 +309,44 @@ class App extends Component {
 		field2 : ''
 	};
 	
-	onClickStartButton = () => {
-		const someShip = new TriangleShip();
-		const field = new Playground(10, 10);
-		field.addShip(someShip);
-		const ship2 = new SquareShip();
-		field.addShip(ship2);
-		const ship3 = new LineShip(3);
-		field.addShip(ship3);
-		field.setShipsOnField();
-		this.setState({field1:field.getField()});
+	initPlayground(field){
 		
-		const ship4 = new TriangleShip();
-		const field2 = new Playground(10, 10);
-		field2.addShip(ship4);
-		const ship5 = new DotShip();
-		field2.addShip(ship5);
-		const ship6 = new LineShip(2);
-		field2.addShip(ship6);
-		field2.setShipsOnField();
-		this.setState({field2:field2.getField()});
+	}
+	
+
+	onClickStartButton = () => {
+		const field1 = new Playground(PLAYGROUND_WIDTH, PLAYGROUND_HEIGHT);
+		const ship1 = new LineShip(5);
+		field1.addShip(ship1);
+		const ship2 = new TriangleShip();
+		field1.addShip(ship2);
+		const ship3 = new SquareShip();
+		field1.addShip(ship3);
+		
+		let threeCellsShipsArr = [];
+		for (let i = 0; i < 3; i++) {
+			threeCellsShipsArr.push(new LineShip(3));
+			field1.addShip(threeCellsShipsArr[i]);
+		}
+		
+		let twoCellsShipsArr = [];
+		for (let i = 0; i < 4; i++) {
+			twoCellsShipsArr.push(new LineShip(2));
+			field1.addShip(twoCellsShipsArr[i]);
+		}
+		
+		let dotShipsArr = [];
+		for (let i = 0; i < 5; i++) {
+			dotShipsArr.push(new DotShip());
+			field1.addShip(dotShipsArr[i]);
+		}
+		
+		if (!field1.setShipsOnField()) {
+			console.log('No space for Dot Ship');
+		}
+		this.setState({field1:field1.getField()});
+		
+		
 		
 	}
 	

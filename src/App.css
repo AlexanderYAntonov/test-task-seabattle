@@ -61,7 +61,7 @@ body {
 
 .Element__ship {
 	background: brown;
-	border:1px solid brown;
+	border:1px solid black;
 }
 .Element__collision {
 	background: red;
