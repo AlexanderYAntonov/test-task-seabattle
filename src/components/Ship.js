@@ -18,10 +18,21 @@ export class Ship {
         return this.size;
     }
 	
-	//set ship alive status to false
-	destroyShip() {
-		this.isAlive = false;
+	//if someone wounded ship
+	//returns alive status of ship
+	hitShip() {
+		//console.log(this.lives);
+		if (!--this.lives) {
+			//console.log(this.lives);
+			this.isAlive = false;
+		}
+		return this.isAlive;
 	}
+	
+	//set ship alive status to false
+	/*destroyShip() {
+		this.isAlive = false;
+	}*/
 	
 	//is ship still alive
 	getLiveStatus() {

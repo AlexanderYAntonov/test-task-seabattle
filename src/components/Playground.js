@@ -4,6 +4,8 @@ import {DotShip} from './Ship.js';
 import {SquareShip} from './Ship.js';
 import {TriangleShip} from './Ship.js';*/
 
+import {ONE_SHOOT} from './Player.js';
+
 export const PLAYGROUND_WIDTH = 10;
 export const PLAYGROUND_HEIGHT = 10;
 
@@ -13,6 +15,13 @@ export class Playground {
 		this.height = height;
 		this.ships = [];
 		this.field = [];
+		this.fogArea = [];
+		for (let i = 0; i < PLAYGROUND_HEIGHT; i++) {
+			this.fogArea[i] = [];
+			for (let j = 0; j < PLAYGROUND_WIDTH; j++) {
+				this.fogArea[i][j] = 0;
+			}
+		}
 	}
 	
 	getWidth(){
@@ -29,6 +38,33 @@ export class Playground {
 	
 	addShip(ship){
 		this.ships.push(ship);
+	}
+	
+	destroyShip(shipID){
+		for (let i = 0; i < PLAYGROUND_HEIGHT; i++) {
+			for (let j = 0; j < PLAYGROUND_WIDTH; j++) {
+				if (this.field[i][j] % ONE_SHOOT === shipID) {
+					//found destoyed ship
+					if (this.field[i][j] < ONE_SHOOT*3){
+						this.field[i][j] += ONE_SHOOT;
+					}
+				}
+			}
+		}
+	}
+	
+	getFogArea() {
+		return this.fogArea;
+	}
+	
+	
+	//clear fog in one cell
+	clearFog(i0, j0) {
+		if (i0 < 0 || i0 >= PLAYGROUND_WIDTH 
+			|| j0 < 0 || j0 >= PLAYGROUND_HEIGHT ) {
+			return false;
+		}
+		this.fogArea[i0][j0] = 1;
 	}
 	
 	//returns true if there is something
@@ -123,13 +159,25 @@ export class Playground {
 		}
 	}
 	
+	getFieldElement(i0, j0){
+		if (i0 < 0 || i0 >= PLAYGROUND_WIDTH 
+			|| j0 < 0 || j0 >= PLAYGROUND_HEIGHT ) {
+			return false;
+		}
+		return this.field[i0][j0];
+	}
+	
 	//set all ships from ships[] on field
 	//if there is no good way - returns false
 	//if ships set OK - returns true
 	setShipsOnField(){
 		this.cleanField();
+		let counter = 0;//ship counter
+		
+		
 		
 		this.ships.forEach(item => {
+			counter++;
 			//find place for ship
 			const {i, j} = this.findPlaceForShip(item);
 			if (i === -1 || j === -1) return false;
@@ -141,12 +189,25 @@ export class Playground {
 			for (let j1 = 0; j1 < width; j1++) {
 				for (let i1 =0; i1 < height; i1++) {
 					if (item.shape[i1][j1] !== 0) {
-						this.field[i + i1][j + j1] += item.shape[i1][j1];
+						this.field[i + i1][j + j1] += item.shape[i1][j1] * 100 + counter;
 					}
 				}
 			}
 		});
 		return true;
+	}
+	
+	getField(){
+		return this.field;
+	}
+	
+	//increase one cell value
+	increaseValue(i0, j0, value) {
+		if (i0 < 0 || i0 >= PLAYGROUND_WIDTH 
+			|| j0 < 0 || j0 >= PLAYGROUND_HEIGHT ) {
+			return false;
+		}
+		this.field[i0][j0] += value;
 	}
 	
 	//test only
@@ -184,7 +245,5 @@ export class Playground {
 		
 	}
 	//-----------------------------
-	getField(){
-		return this.field;
-	}
+	
 }

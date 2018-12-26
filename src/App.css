@@ -84,10 +84,30 @@ body {
 	background: navy;
 }
 
+.Element__missed {
+	background: lightblue;
+}
+
 .Element__ship {
 	background: brown;
 	border:1px solid black;
 }
+
+.Element__fog {
+	background: lightgray;
+	border:1px solid gray;
+}
+
+.Element__wounded_ship {
+	background: orange;
+	border:1px solid black;
+}
+
+.Element__destroyed_ship {
+	background: black;
+	border:1px solid black;
+}
+
 .Element__collision {
 	background: red;
 }

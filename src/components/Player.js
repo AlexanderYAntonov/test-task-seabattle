@@ -8,6 +8,11 @@ import {TriangleShip} from './Ship.js';
 import {PLAYGROUND_WIDTH} from './Playground.js';
 import {PLAYGROUND_HEIGHT} from './Playground.js';
 
+export const ONE_SHOOT = 100; //incresing cell value for each shoot
+
+//name - player name
+//playground - playground according to player
+//shoots - log of shoots maden
 class Player {
 	constructor (name) {
 		this.name = name;
@@ -16,39 +21,45 @@ class Player {
 	}
 	
 	initPlayground() {
-		const field = new Playground(PLAYGROUND_WIDTH, PLAYGROUND_HEIGHT);
+		this.playground = new Playground(PLAYGROUND_WIDTH, PLAYGROUND_HEIGHT);
 		const ship1 = new LineShip(5);
-		field.addShip(ship1);
+		this.playground.addShip(ship1);
 		const ship2 = new TriangleShip();
-		field.addShip(ship2);
+		this.playground.addShip(ship2);
 		const ship3 = new SquareShip();
-		field.addShip(ship3);
+		this.playground.addShip(ship3);
 		
 		let threeCellsShipsArr = [];
 		for (let i = 0; i < 3; i++) {
 			threeCellsShipsArr.push(new LineShip(3));
-			field.addShip(threeCellsShipsArr[i]);
+			this.playground.addShip(threeCellsShipsArr[i]);
 		}
 		
 		let twoCellsShipsArr = [];
 		for (let i = 0; i < 4; i++) {
 			twoCellsShipsArr.push(new LineShip(2));
-			field.addShip(twoCellsShipsArr[i]);
+			this.playground.addShip(twoCellsShipsArr[i]);
 		}
 		
 		let dotShipsArr = [];
 		for (let i = 0; i < 5; i++) {
 			dotShipsArr.push(new DotShip());
-			field.addShip(dotShipsArr[i]);
+			this.playground.addShip(dotShipsArr[i]);
 		}
 		
-		if (!field.setShipsOnField()) {
+		if (!this.playground.setShipsOnField()) {
 			console.log('No space for Dot Ship');
 		}
-		return field;
+		return this.playground;
+	}
+	
+	getPlayground() {
+		return this.playground;
 	}
 }
 
+
+//implemenets logic of bot
 export class BotPlayer extends Player{
 	constructor (name) {
 		super(name);
@@ -57,10 +68,55 @@ export class BotPlayer extends Player{
 	}
 }
 
+
+//for human player
 export class HumanPlayer extends Player{
 	constructor (name) {
 		super(name);
-		this.primaryTargets = [];//shoot them first
-		this.secondaryTargets = [];
+	}
+	
+	makeTurn(player, i0, j0) {
+		if (!player) return false;
+		
+		let data = player.playground.getFieldElement(i0, j0);
+		
+		//already shoot here
+		if (data === ONE_SHOOT) return false;
+		
+		//it's destroyed ship
+		if (data >= ONE_SHOOT * 3) return false;
+		
+		//console.log(player.playground);
+		
+		player.playground.increaseValue(i0, j0, ONE_SHOOT);
+		
+		//console.log('Human makes turn', player, data, i0, j0);
+				
+		player.playground.clearFog(i0, j0);
+		//console.log(player.playground, data);
+		
+		//check if player missed
+		if (data === 0) {
+			//console.log('You missed');
+			return true;
+		}
+		
+		//determine the ship player shooted
+		const shipID = data % ONE_SHOOT - 1;
+		const ship = player.playground.getShips()[shipID];
+			//console.log('check ship', ship);
+		
+		//ship was damaged
+		if (data > 0) {
+			//hit ship & check it
+			if (!ship.hitShip()) {
+				//destroy ship
+				player.playground.destroyShip(shipID + 1);
+			}
+			
+			//bot skips its turn
+			return false;
+		}
+		return true;
 	}
 }

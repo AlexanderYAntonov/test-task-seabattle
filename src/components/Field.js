@@ -5,7 +5,7 @@ import {Element} from './Element.js';
 class Field extends React.Component {
 	
 	renderField = () => {
-		const {data} = this.props;
+		const {data, onClickCell} = this.props;
 		
 		let fieldTemplate = [];
 		
@@ -16,7 +16,9 @@ class Field extends React.Component {
 			{
 				for (let j = 0; j < width; j++) {
 					const id = this.props.field * 1000 + i*10 + j;
-					fieldTemplate.push(<Element key={id} data={data[i][j]} />);
+					
+					fieldTemplate.push(
+						<Element key={id} id={id} data={data[i][j]} i0={i} j0={j} onClickCell={onClickCell} />);
 				}
 			}
 		} else {
@@ -35,7 +37,8 @@ class Field extends React.Component {
 
 Field.propTypes = {
     data:PropTypes.array.isRequired,
-	field:PropTypes.number.isRequired
+	field:PropTypes.number.isRequired,
+	onClickCell:PropTypes.func.isRequired
 }
 
 export {Field};

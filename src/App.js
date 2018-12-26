@@ -6,8 +6,12 @@ import {DotShip} from './components/Ship.js';
 import {LineShip} from './components/Ship.js';
 import {SquareShip} from './components/Ship.js';
 import {TriangleShip} from './components/Ship.js';
+import {Player} from './components/Player.js';
 import {BotPlayer} from './components/Player.js';
 import {HumanPlayer} from './components/Player.js';
+import {PLAYGROUND_WIDTH} from './components/Playground.js';
+import {PLAYGROUND_HEIGHT} from './components/Playground.js';
+
 
 class App extends Component {
 
@@ -23,6 +27,21 @@ class App extends Component {
 		gameStarted: false
 	};
 	
+	handleOnClickCell = (obj) => {
+		const {i0, j0, id} = obj;
+		const {field1, field2, player1, player2} = this.state;
+		const fieldNumber = Math.floor(id/1000);
+		if (fieldNumber !== 1 && fieldNumber !== 2) {
+			return false;
+		}
+		
+		if (fieldNumber === 1) {
+			player2.makeTurn(player1, i0, j0);
+			this.setState({player1:player1});
+		}
+		return true;
+	}
+
 	//validate player's names
 	validate = () => {
 		let error = 0;
@@ -62,7 +81,7 @@ class App extends Component {
 		this.setState({field1: field1.getField()});
 		this.setState({gameStarted: true});
 		
-		const field2 = player1.initPlayground();
+		const field2 = player2.initPlayground();
 		this.setState({field2: field2.getField()});
 		this.setState({gameStarted: true});
 		
@@ -74,7 +93,32 @@ class App extends Component {
     }
 	
   	render() {
-		const {name1, name2, name1Status, name2Status, field1, field2, gameStarted} = this.state;
+		const {name1, name2, name1Status, name2Status, field1, field2, gameStarted, player1} = this.state;
+		let fieldWithFog = [];
+		
+		if (player1) {
+			
+			const playground = player1.getPlayground();
+			const fogArea = playground.getFogArea();
+				
+			for (let i = 0; i < PLAYGROUND_HEIGHT; i++) {
+				fieldWithFog[i] = [];
+				for (let j = 0; j < PLAYGROUND_WIDTH; j++) {
+					fieldWithFog[i][j] = field1[i][j] * fogArea[i][j];
+				}
+			}
+		}
+		
+		//optimize it
+		//show water on second playground instead of fog
+		if (player1){
+			for (let i = 0; i < PLAYGROUND_HEIGHT; i++) {
+				for (let j = 0; j < PLAYGROUND_WIDTH; j++) {
+					if (field2[i][j]===0) field2[i][j] = 1;
+				}
+			}
+		}
+		
 		return (
 		  <div className="App">
 			<header className='App__header'>Battleships</header> 
@@ -96,7 +140,7 @@ class App extends Component {
 					}
 					{gameStarted && <div className='App__player_name'>{name1}</div>}
 					{field1 &&
-						<Field data={field1} field={1}/>
+						<Field data={fieldWithFog} field={1} onClickCell={this.handleOnClickCell}/>
 					}
 				</div>
 				
@@ -113,7 +157,7 @@ class App extends Component {
 					}
 					{gameStarted && <div className='App__player_name'>{name2}</div>}
 					{field2 &&
-						<Field data={field2} field={2}/>
+						<Field data={field2} field={2} onClickCell={this.handleOnClickCell}/>
 					}
 				</div>
 			</div>  
