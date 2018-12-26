@@ -13,6 +13,14 @@ body {
 	color: navy;
 }
 
+.App__player_name_block {
+	display: flex;
+	flex-direction: row;
+	justify-content: flex-start;
+	align-items: center;
+	margin-bottom: 10px;
+}
+
 .App__player_name {
 	padding: 10px;
 	margin-bottom: 10px;
@@ -21,7 +29,7 @@ body {
 .App__player_name_input {
 	border: 1px solid green;
 	padding: 10px;
-	margin-bottom: 10px;
+	margin-left: 10px;
 	border-radius: 10px;
 	outline: none;
 }
@@ -77,19 +85,20 @@ body {
 
 .Element {
 	border: 1px solid darkblue;
-	padding: 15px;
+	padding: 20px;
 }
 
 .Element__water {
-	background: navy;
+	background: #34a0cf;
 }
 
 .Element__missed {
-	background: lightblue;
+	background: #1478a3;
+	border:1px solid black;
 }
 
 .Element__ship {
-	background: brown;
+	background: #e3a74d;
 	border:1px solid black;
 }
 
@@ -99,12 +108,12 @@ body {
 }
 
 .Element__wounded_ship {
-	background: orange;
+	background: #fa790f;
 	border:1px solid black;
 }
 
 .Element__destroyed_ship {
-	background: black;
+	background: #de1259;
 	border:1px solid black;
 }
 

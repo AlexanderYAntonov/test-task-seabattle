@@ -11,6 +11,8 @@ import {BotPlayer} from './components/Player.js';
 import {HumanPlayer} from './components/Player.js';
 import {PLAYGROUND_WIDTH} from './components/Playground.js';
 import {PLAYGROUND_HEIGHT} from './components/Playground.js';
+import bot from './images/bot.png';
+import human from './images/human.png';
 
 
 class App extends Component {
@@ -127,35 +129,41 @@ class App extends Component {
 			
 			<div className='App__main'>
 				<div className='App__playground'>
-					{!gameStarted &&
-						<input 
-							type='text'
-							id = 'name1'
-							className={(name1Status && 'App__player_name_input') || (!name1Status && 'App__player_name_input_error')}
-							value = {name1}
-							onChange = {this.handleChange}
-							autoFocus={true}
-							placeholder='Bot name'
-						/>
-					}
-					{gameStarted && <div className='App__player_name'>{name1}</div>}
+					<div className='App__player_name_block'>
+						<img src={bot}/>
+						{!gameStarted &&
+							<input 
+								type='text'
+								id = 'name1'
+								className={(name1Status && 'App__player_name_input') || (!name1Status && 'App__player_name_input_error')}
+								value = {name1}
+								onChange = {this.handleChange}
+								autoFocus={true}
+								placeholder='Enter bot name'
+							/>
+						}
+						{gameStarted && <div className='App__player_name'>{name1}</div>}
+					 </div>
 					{field1 &&
 						<Field data={fieldWithFog} field={1} onClickCell={this.handleOnClickCell}/>
 					}
 				</div>
 				
 				<div className='App__playground'>
-					{!gameStarted &&
-						<input 
-							type='text'
-							id = 'name2'
-							className={(name2Status && 'App__player_name_input') || (!name2Status && 'App__player_name_input_error')}
-							value = {name2}
-							onChange = {this.handleChange}
-							placeholder='Player name'
-						/>
-					}
-					{gameStarted && <div className='App__player_name'>{name2}</div>}
+					<div className='App__player_name_block'>
+						<img src={human}/>
+						{!gameStarted &&
+							<input 
+								type='text'
+								id = 'name2'
+								className={(name2Status && 'App__player_name_input') || (!name2Status && 'App__player_name_input_error')}
+								value = {name2}
+								onChange = {this.handleChange}
+								placeholder='Enter player name'
+							/>
+						}
+						{gameStarted && <div className='App__player_name'>{name2}</div>}
+					 </div>
 					{field2 &&
 						<Field data={field2} field={2} onClickCell={this.handleOnClickCell}/>
 					}
