@@ -50,19 +50,18 @@ class App extends Component {
 		if (fieldNumber === 1) {
 			//human turn
 			const humanResult = player2.makeTurn(player1, i0, j0);
-			this.setState({player1:player1, turn : 'Bot'});
+			this.setState({player1:player1});
 			
 			//check if human wins
 			this.checkGameOver(player1, 'Human');
 			
-			this.forceUpdate();
-			
 			//bot turn
 			if (!humanResult) {
 				let result = true;
+				this.setState({turn:'Bot'});
 				while (result){
-					result = player1.makeTurn(player2); 
-					this.setState({player2:player2});
+					result = player1.makeTurn(player2);
+						this.setState({player2:player2})
 				}
 			}
 			

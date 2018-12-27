@@ -1,4 +1,3 @@
-import {DotShip} from './Ship.js';
 import {ONE_SHOOT} from './Player.js';
 
 export const PLAYGROUND_WIDTH = 10;
