@@ -1,13 +1,7 @@
 import React, { Component } from 'react';
 import './App.css';
 import {Field} from './components/Field.js';
-/*import {Playground} from './components/Playground.js';
-import {DotShip} from './components/Ship.js';
-import {LineShip} from './components/Ship.js';
-import {SquareShip} from './components/Ship.js';
-import {TriangleShip} from './components/Ship.js';
-*/
-//import {Player} from './components/Player.js';
+import {Win} from './components/Win.js';
 import {BotPlayer} from './components/Player.js';
 import {HumanPlayer} from './components/Player.js';
 import {PLAYGROUND_WIDTH} from './components/Playground.js';
@@ -27,9 +21,24 @@ class App extends Component {
 		field2 : '',
 		player1 : '',
 		player2 : '',
-		gameStarted: false
+		gameStarted: false, 
+		turn : '',
+		win: ''
 	};
 	
+	checkGameOver(player, name){
+		const playgroud = player.getPlayground();
+		if (playgroud && name) {
+			let ships = playgroud.getShips();
+			ships = ships.filter(item => item.getLiveStatus());
+
+			//if player wins stop making turns
+			if (!ships.length) {
+				this.setState({win: name, gameStarted: false});
+			}
+		}
+	}
+
 	handleOnClickCell = (obj) => {
 		const {i0, j0, id} = obj;
 		const {player1, player2} = this.state;
@@ -39,34 +48,54 @@ class App extends Component {
 		}
 		
 		if (fieldNumber === 1) {
-			player2.makeTurn(player1, i0, j0);
-			this.setState({player1:player1});
+			//human turn
+			const humanResult = player2.makeTurn(player1, i0, j0);
+			this.setState({player1:player1, turn : 'Bot'});
+			
+			//check if human wins
+			this.checkGameOver(player1, 'Human');
+			
+			this.forceUpdate();
+			
+			//bot turn
+			if (!humanResult) {
+				let result = true;
+				while (result){
+					result = player1.makeTurn(player2); 
+					this.setState({player2:player2});
+				}
+			}
+			
+			//check if bot wins
+			this.checkGameOver(player2, 'Bot');
+						
+			this.setState({turn : 'Human'});
 		}
 		return true;
 	}
 
+	setNameStatus(name, statusID){
+		name = name.trim();
+        if (!name) {
+            this.setState({[statusID]: false});
+        } else {
+            this.setState({[statusID]: true});
+        }
+		return name;
+	}
+	
 	//validate player's names
 	validate = () => {
-		let error = 0;
         let {name1, name2} = this.state;
-        name1 = name1.trim();
-        name2 = name2.trim();
-        
-        if (!name1) {
-            this.setState({name1Status: false});
-            error += 1;
-        } else {
-            this.setState({name1Status: true});
-        }
-        
-        if (!name2) {
-            this.setState({name2Status: false});
-            error += 2;
-        } else {
-            this.setState({name2Status: true});
-        }
-        //if (error > 0) return false;
-		return true;
+		name1 = this.setNameStatus(name1, 'name1Status');
+		name2 = this.setNameStatus(name2, 'name2Status');
+       		
+		//human turn is first
+		if (name1 && name2) {
+			this.setState({turn: 'Human', gameStarted: true});
+			return true;
+		}
+		return false;
 	}
 
 	//validate names and place ships
@@ -82,11 +111,9 @@ class App extends Component {
 		
 		const field1 = player1.initPlayground();
 		this.setState({field1: field1.getField()});
-		this.setState({gameStarted: true});
 		
 		const field2 = player2.initPlayground();
 		this.setState({field2: field2.getField()});
-		this.setState({gameStarted: true});
 		
 	}
 	
@@ -95,8 +122,23 @@ class App extends Component {
         this.setState({[id]: value});
     }
 	
+	handleClickOK = () => {
+		this.setState({name1 : '',
+			name1Status: true,
+			name2 : '',
+			name2Status: true,
+			field1 : '',
+			field2 : '',
+			player1 : '',
+			player2 : '',
+			gameStarted: false, 
+			turn : '',
+			win: ''
+		});
+	}
+	
   	render() {
-		const {name1, name2, name1Status, name2Status, field1, field2, gameStarted, player1} = this.state;
+		const {name1, name2, name1Status, name2Status, field1, field2, gameStarted, player1, turn, win} = this.state;
 		let fieldWithFog = [];
 		
 		if (player1) {
@@ -110,30 +152,18 @@ class App extends Component {
 					fieldWithFog[i][j] = field1[i][j] * fogArea[i][j];
 				}
 			}
-		//	console.log('fog', fogArea);
-		//	console.log('field1', field1);
-		//			console.log('field',fieldWithFog);
 		}
-		
-		//optimize it
-		//show water on second playground instead of fog
-	/*	if (player1){
-			for (let i = 0; i < PLAYGROUND_HEIGHT; i++) {
-				for (let j = 0; j < PLAYGROUND_WIDTH; j++) {
-					if (field2[i][j]===0) field2[i][j] = 1;
-				}
-			}
-		}*/
-		
+			
 		return (
 		  <div className="App">
 			<header className='App__header'>Battleships</header> 
 			
-			<div onClick={this.onClickStartButton} className='App__start_button'>Start</div>
-			
-			<div className='App__main'>
+			{win === '' && <div onClick={this.onClickStartButton} className='App__start_button'>Start</div>}
+
+			{win === '' &&<div className='App__main'>
+					
 				<div className='App__playground'>
-					<div className='App__player_name_block'>
+					<div className={(turn !== 'Bot' && 'App__player_name_block') || ((turn === 'Bot' && 'App__player_name_block App__turn'))}>
 						<img src={bot} alt='bot'/>
 						{!gameStarted &&
 							<input 
@@ -152,10 +182,12 @@ class App extends Component {
 						<Field data={fieldWithFog} field={1} onClickCell={this.handleOnClickCell}/>
 					}
 				</div>
-				
+					
+					
 				<div className='App__playground'>
-					<div className='App__player_name_block'>
-						<img src={human} alt='bot'/>
+					<div className={
+						(turn === 'Human' && 'App__player_name_block App__turn') || ((turn !== 'Human' && 'App__player_name_block'))}>
+						<img src={human} alt='human'/>
 						{!gameStarted &&
 							<input 
 								type='text'
@@ -166,13 +198,20 @@ class App extends Component {
 								placeholder='Enter player name'
 							/>
 						}
-						{gameStarted && <div className='App__player_name'>{name2}</div>}
+						{ 
+							gameStarted && <div className='App__player_name'>{name2}
+							</div>
+						}
 					 </div>
 					{field2 &&
 						<Field data={field2} field={2} onClickCell={this.handleOnClickCell}/>
 					}
 				</div>
-			</div>  
+
+			</div>
+			}
+			{win !== '' && <Win winner={win} onClickOK={this.handleClickOK}/>}
+							 
 		  </div>
 		);
   }
