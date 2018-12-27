@@ -1,9 +1,4 @@
-//import {Ship} from './Ship.js';
 import {DotShip} from './Ship.js';
-/*import {LineShip} from './Ship.js';
-import {SquareShip} from './Ship.js';
-import {TriangleShip} from './Ship.js';*/
-
 import {ONE_SHOOT} from './Player.js';
 
 export const PLAYGROUND_WIDTH = 10;
@@ -57,7 +52,6 @@ export class Playground {
 		return this.fogArea;
 	}
 	
-	
 	//clear fog in one cell
 	clearFog(i0, j0) {
 		if (i0 < 0 || i0 >= PLAYGROUND_WIDTH 
@@ -77,13 +71,13 @@ export class Playground {
 					if (i > 0) {
 						this.fogArea[i - 1][j] = 1;
 					}
-					if (i < PLAYGROUND_HEIGHT) {
+					if (i < PLAYGROUND_HEIGHT-1) {
 						this.fogArea[i + 1][j] = 1;
 					}
 					if (j > 0) {
 						this.fogArea[i][j - 1] = 1;
 					}
-					if (j < PLAYGROUND_WIDTH) {
+					if (j < PLAYGROUND_WIDTH-1) {
 						this.fogArea[i][j + 1] = 1;
 					}
 				}
@@ -216,7 +210,6 @@ export class Playground {
 				}
 			}
 		});
-		console.log(this.field);
 		return true;
 	}
 	
@@ -231,42 +224,5 @@ export class Playground {
 			return false;
 		}
 		this.field[i0][j0] += value;
-	}
-	
-	//test only
-	//-------------------------------
-	placeShipXY(ship, x, y){
-		let width = ship.getWidth();
-		let height = ship.getHeight();
-		
-		this.cleanField();
-		
-		if (this.checkCell(ship, y, x)) {
-		
-			for (let i = 0; i < height; i++) {
-				for (let j = 0; j < width; j++) {
-					this.field[i+y][j+x] = ship.shape[i][j]; 
-				}
-			}
-		}
-			
-	}
-	
-	checkDotShipAddition() {
-		const ship = new DotShip();
-		this.placeShipXY(ship, 3, 3);
-		const ship2 = new DotShip();
-		console.log('up-left ',this.checkCell(ship2, 2, 2));
-		console.log('up ',this.checkCell(ship2, 2, 3));
-		console.log('up-right ',this.checkCell(ship2, 2, 4));
-		console.log('left ',this.checkCell(ship2, 3, 2));
-		console.log('center ',this.checkCell(ship2, 3, 3));
-		console.log('right ',this.checkCell(ship2, 3, 4));
-		console.log('down-left ',this.checkCell(ship2, 4, 2));
-		console.log('down ',this.checkCell(ship2, 4, 3));
-		console.log('down-right ',this.checkCell(ship2, 4, 4));
-		
-	}
-	//-----------------------------
-	
+	}	
 }

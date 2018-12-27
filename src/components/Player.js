@@ -3,7 +3,6 @@ import {DotShip} from './Ship.js';
 import {LineShip} from './Ship.js';
 import {SquareShip} from './Ship.js';
 import {TriangleShip} from './Ship.js';
-//import {Field} from './Field.js';
 
 import {PLAYGROUND_WIDTH} from './Playground.js';
 import {PLAYGROUND_HEIGHT} from './Playground.js';
@@ -17,7 +16,6 @@ class Player {
 	constructor (name) {
 		this.name = name;
 		this.playground = '';
-		this.shoots = [];//cells that he shooted
 	}
 	
 	initPlayground() {
@@ -63,28 +61,184 @@ class Player {
 export class BotPlayer extends Player{
 	constructor (name) {
 		super(name);
+		//target - {iTarget: value, jTarget: value}
 		this.primaryTargets = [];//shoot them first
-		this.secondaryTargets = [];
+		this.secondaryTargets = [];//other targets
+		//shoots - {iShoot: coordinate, jShoot: coordinate, result: shipID || 0 - shoot result}
+		this.shoots = [];//shoots stack for hunting ship
+		this.targetedShip = 0;//ship for hunting
+		//fill targets arrays
+		for (let i = 0; i < PLAYGROUND_HEIGHT; i++) {
+			for (let j = 0; j < PLAYGROUND_WIDTH; j++) {
+				let k = Math.abs(i - j) % 3;
+				if (!k){
+					//this is a primary target
+					this.primaryTargets.push({iTarget: i, jTarget: j});
+				} else {
+					//this is a secondary target
+					this.secondaryTargets.push({iTarget: i, jTarget: j});
+				}
+			}
+		}
 	}
+	
+	findTarget() {
+
+		let objTarget = [{iTarget: -1, jTarget: -1}];
+		
+		//check if there is a targeted ship
+		if (this.targetedShip) {
+			//hunt wounded ship
+		}
+		
+		//select one of primary targets
+		if (this.primaryTargets.length) {
+			const randomTarget = Math.floor(Math.random * this.primaryTargets.length);
+			objTarget = this.primaryTargets.splice(randomTarget, 1);
+			return objTarget[0];
+		}
+		
+		//select one of secondary targets
+		if (this.secondaryTargets.length) {
+			const randomTarget = Math.floor(Math.random * this.secondaryTargets.length);
+			objTarget = this.secondaryTargets.splice(randomTarget, 1);
+			return objTarget[0];
+		}
+		
+		//if no targets return error
+		return objTarget[0];
+	}
+	
+	//clear all shoots on this ship 
+	//ship destroyed
+	clearShoots(shipID) {
+		this.shoots = this.shoots.map(item => {
+			if (item.result === shipID) {
+				item.result = 0;
+			}
+			return item;
+		});
+	}
+	
+	clearTargetsArray(arr, i, j){
+		return arr.filter(item => {
+			//top cell
+			if (item.iTarget === i - 1 && item.jTarget === j) {
+				return false;
+			} 
+
+			//right cell
+			if (item.iTarget === i && item.jTarget === j + 1) {
+				return false;
+			} 
+
+			//bottom cell
+			if (item.iTarget === i + 1 && item.jTarget === j) {
+				return false;
+			} 
+
+			//left cell
+			if (item.iTarget === i && item.jTarget === j - 1) {
+				return false;
+			} 
+			return true;
+		});	
+	}
+	
+	//remove near cells from targets arrays
+	//ship destroyed
+	clearVisibleAreaAroundShip(ship){
+		//get shape
+		const shape = ship.getShape();
+		const width = ship.getWidth();
+		const height = ship.getHeight();
+		
+		for (let i = 0; i < height; i++){
+			for (let j = 0; j < width; j++){
+				if (shape[i][j] === 1) {
+					//clear primaryTargets
+					this.primaryTargets = this.clearTargetsArray(this.primaryTargets, i, j);
+					
+					//clear secondaryTargets
+					this.secondaryTargets = this.clearTargetsArray(this.secondaryTargets, i, j);
+				}
+			}
+		}
+	}
+	
+	//main turn procedure
+	makeTurn(player) {
+		if (!player) return false;
+		//find target and decrease targets stack
+		const {iTarget, jTarget} = this.findTarget();
+
+		
+		//check that has target 
+		if (iTarget === -1 || jTarget === -1) {
+			return false;
+		}
+		
+		//make shoot
+		player.playground.increaseValue(iTarget, jTarget, ONE_SHOOT);
+		
+		//recognize target
+		let data = player.playground.getFieldElement(iTarget, jTarget);
+		
+		//check if missed
+		if (data === 1 + ONE_SHOOT) {
+			//remember shoot
+			this.shoots.unshift({iTarget: iTarget, jTarget: jTarget, result: 0});
+			return false;
+		}
+		
+		
+		//check if it is ship
+		if (data > 1 + ONE_SHOOT*2 && data < ONE_SHOOT * 3) {
+			//get wounded ship ID
+			const shipID = data % ONE_SHOOT - 2;
+			//get wounded ship
+			const ship = player.playground.getShips()[shipID];
+			
+			//remember good shoot for hunting
+			this.shoots.unshift({iTarget: iTarget, jTarget: jTarget, result: shipID});
+			this.targetedShip = shipID;
+
+			
+			if (!ship.hitShip()) {
+				//clear all shoots on this ship 
+				//ship destroyed
+				this.clearShoots(shipID);
+				
+				this.targetedShip = 0;
+				
+				//destroy ship
+				player.playground.destroyShip(shipID);
+				
+				//remove near cells from targets arrays
+				this.clearVisibleAreaAroundShip(ship);
+			}
+			return true;//human miss it's turn
+		}
+		
+		return false;
+	}
+	
 }
 
 
 //for human player
 export class HumanPlayer extends Player{
-	constructor (name) {
-		super(name);
-	}
-	
+	//main turn procedure
 	makeTurn(player, i0, j0) {
 		if (!player) return false;
 		
 		let data = player.playground.getFieldElement(i0, j0);
 		
 		//already shoot here
-		if (data === ONE_SHOOT) return false;
+		if (data === ONE_SHOOT) return true;
 		
 		//it's destroyed ship
-		if (data >= ONE_SHOOT * 3) return false;
+		if (data >= ONE_SHOOT * 3) return true;
 		
 		player.playground.increaseValue(i0, j0, ONE_SHOOT);
 		
@@ -92,8 +246,7 @@ export class HumanPlayer extends Player{
 		
 		//check if player missed
 		if (data === 1) {
-			//console.log('You missed');
-			return true;
+			return false;
 		}
 		
 		//determine the ship player shooted
@@ -110,8 +263,8 @@ export class HumanPlayer extends Player{
 			}
 			
 			//bot skips its turn
-			return false;
+			return true;
 		}
-		return true;
+		return false;
 	}
 }
