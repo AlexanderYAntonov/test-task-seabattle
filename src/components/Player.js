@@ -82,6 +82,37 @@ export class BotPlayer extends Player{
 		}
 	}
 	
+	checkNearbyCellsForTarget(obj){
+		let id = 0;
+		for (id = 0; id < this.primaryTargets.length; id++)
+		{
+			let {iTarget, jTarget} = this.primaryTargets[id];
+			if (iTarget === obj.iTarget && jTarget === obj.jTarget) {
+				break;
+			}
+		}
+		
+		if (id < this.primaryTargets.length){
+			this.primaryTargets.splice(id, 1);
+			return true;
+		}
+		
+		for (id = 0; id < this.secondaryTargets.length; id++)
+		{
+			let {iTarget, jTarget} = this.secondaryTargets[id];
+			if (iTarget === obj.iTarget && jTarget === obj.jTarget) {
+				break;
+			}
+		}
+		
+		if (id < this.secondaryTargets.length){
+			this.secondaryTargets.splice(id, 1);
+			return true;
+		}
+		
+		return false;
+	}
+	
 	findTarget() {
 
 		let objTarget = [{iTarget: -1, jTarget: -1}];
@@ -89,6 +120,46 @@ export class BotPlayer extends Player{
 		//check if there is a targeted ship
 		if (this.targetedShip) {
 			//hunt wounded ship
+			//get all cells that was shooted
+			let cells = this.shoots.filter(item => {
+				if (item.result === this.targetedShip) {
+					return true;
+				}
+				return false;
+			});
+			
+			//find nearby cells that was not shooted
+			for (let i = 0; i < cells.length; i++){
+				let {iTarget, jTarget} = cells[i];
+				//check top cell
+				if (iTarget > 0) {
+					let obj = {iTarget: iTarget - 1, jTarget: jTarget};
+					if (this.checkNearbyCellsForTarget(obj)){
+						return obj;
+					}
+				}
+				//check bottom cell
+				if (iTarget < PLAYGROUND_HEIGHT - 1) {
+					let obj = {iTarget: iTarget + 1, jTarget: jTarget};
+					if (this.checkNearbyCellsForTarget(obj)){
+						return obj;
+					}
+				}
+				//check left cell
+				if (jTarget > 0) {
+					let obj = {iTarget: iTarget, jTarget: jTarget - 1};
+					if (this.checkNearbyCellsForTarget(obj)){
+						return obj;
+					}
+				}
+				//check rightt cell
+				if (jTarget < PLAYGROUND_WIDTH - 1) {
+					let obj = {iTarget: iTarget, jTarget: jTarget + 1};
+					if (this.checkNearbyCellsForTarget(obj)){
+						return obj;
+					}
+				}
+			}
 		}
 		
 		//select one of primary targets
@@ -171,7 +242,6 @@ export class BotPlayer extends Player{
 		if (!player) return false;
 		//find target and decrease targets stack
 		const {iTarget, jTarget} = this.findTarget();
-
 		
 		//check that has target 
 		if (iTarget === -1 || jTarget === -1) {
@@ -256,6 +326,7 @@ export class HumanPlayer extends Player{
 		//ship was damaged
 		if (data > 0) {
 			//hit ship & check it
+			if (!ship) return false;
 			if (!ship.hitShip()) {
 				//destroy ship
 				player.playground.destroyShip(shipID);
