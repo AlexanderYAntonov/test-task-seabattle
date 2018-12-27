@@ -43,7 +43,7 @@ export class Playground {
 	destroyShip(shipID){
 		for (let i = 0; i < PLAYGROUND_HEIGHT; i++) {
 			for (let j = 0; j < PLAYGROUND_WIDTH; j++) {
-				if (this.field[i][j] % ONE_SHOOT === shipID) {
+				if (this.field[i][j] % ONE_SHOOT -2 === shipID) {
 					//found destoyed ship
 					if (this.field[i][j] < ONE_SHOOT*3){
 						this.field[i][j] += ONE_SHOOT;
@@ -67,6 +67,30 @@ export class Playground {
 		this.fogArea[i0][j0] = 1;
 	}
 	
+	//clears fog around destroyed ship
+	clearFogAroundShip(shipID) {
+		for (let i = 0; i < PLAYGROUND_HEIGHT; i++) {
+			for (let j = 0; j < PLAYGROUND_WIDTH; j++) {
+				if (this.field[i][j] % ONE_SHOOT -2 === shipID) {
+					//found destoyed ship
+					//lets clear fog around it
+					if (i > 0) {
+						this.fogArea[i - 1][j] = 1;
+					}
+					if (i < PLAYGROUND_HEIGHT) {
+						this.fogArea[i + 1][j] = 1;
+					}
+					if (j > 0) {
+						this.fogArea[i][j - 1] = 1;
+					}
+					if (j < PLAYGROUND_WIDTH) {
+						this.fogArea[i][j + 1] = 1;
+					}
+				}
+			}
+		}
+	}
+	
 	//returns true if there is something
 	//in nearby cells
 	checkArea(y, x){
@@ -81,7 +105,7 @@ export class Playground {
 		j = x;
 		for (i = y-1; i <= y+1; i++) {
 			if (i >= 0 && i < this.height){ 
-				if (this.field[i][j] !== 0) {
+				if (this.field[i][j] !== 1) {
 					return true;
 				}
 			}
@@ -91,7 +115,7 @@ export class Playground {
 		
 		for (j = x-1; j <= x+1; j++) {
 			if (j >= 0 && j < this.width 
-				&& this.field[i][j] !== 0) {
+				&& this.field[i][j] !== 1) {
 				return true;
 			}
 		}
@@ -154,7 +178,7 @@ export class Playground {
 		for (let i = 0; i < this.width; i++) {
 			this.field[i] = [];
 			for (let j =0; j < this.height; j++) {
-				this.field[i][j] = 0;
+				this.field[i][j] = 1;//water
 			}
 		}
 	}
@@ -172,9 +196,7 @@ export class Playground {
 	//if ships set OK - returns true
 	setShipsOnField(){
 		this.cleanField();
-		let counter = 0;//ship counter
-		
-		
+		let counter = 1;//ship counter
 		
 		this.ships.forEach(item => {
 			counter++;
@@ -189,11 +211,12 @@ export class Playground {
 			for (let j1 = 0; j1 < width; j1++) {
 				for (let i1 =0; i1 < height; i1++) {
 					if (item.shape[i1][j1] !== 0) {
-						this.field[i + i1][j + j1] += item.shape[i1][j1] * 100 + counter;
+						this.field[i + i1][j + j1] = item.shape[i1][j1] * 100 + counter;
 					}
 				}
 			}
 		});
+		console.log(this.field);
 		return true;
 	}
 	

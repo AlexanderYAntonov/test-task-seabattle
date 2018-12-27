@@ -1,12 +1,13 @@
 import React, { Component } from 'react';
 import './App.css';
 import {Field} from './components/Field.js';
-import {Playground} from './components/Playground.js';
+/*import {Playground} from './components/Playground.js';
 import {DotShip} from './components/Ship.js';
 import {LineShip} from './components/Ship.js';
 import {SquareShip} from './components/Ship.js';
 import {TriangleShip} from './components/Ship.js';
-import {Player} from './components/Player.js';
+*/
+//import {Player} from './components/Player.js';
 import {BotPlayer} from './components/Player.js';
 import {HumanPlayer} from './components/Player.js';
 import {PLAYGROUND_WIDTH} from './components/Playground.js';
@@ -31,7 +32,7 @@ class App extends Component {
 	
 	handleOnClickCell = (obj) => {
 		const {i0, j0, id} = obj;
-		const {field1, field2, player1, player2} = this.state;
+		const {player1, player2} = this.state;
 		const fieldNumber = Math.floor(id/1000);
 		if (fieldNumber !== 1 && fieldNumber !== 2) {
 			return false;
@@ -64,7 +65,7 @@ class App extends Component {
         } else {
             this.setState({name2Status: true});
         }
-        if (error > 0) return false;
+        //if (error > 0) return false;
 		return true;
 	}
 
@@ -102,24 +103,27 @@ class App extends Component {
 			
 			const playground = player1.getPlayground();
 			const fogArea = playground.getFogArea();
-				
+			
 			for (let i = 0; i < PLAYGROUND_HEIGHT; i++) {
 				fieldWithFog[i] = [];
 				for (let j = 0; j < PLAYGROUND_WIDTH; j++) {
 					fieldWithFog[i][j] = field1[i][j] * fogArea[i][j];
 				}
 			}
+		//	console.log('fog', fogArea);
+		//	console.log('field1', field1);
+		//			console.log('field',fieldWithFog);
 		}
 		
 		//optimize it
 		//show water on second playground instead of fog
-		if (player1){
+	/*	if (player1){
 			for (let i = 0; i < PLAYGROUND_HEIGHT; i++) {
 				for (let j = 0; j < PLAYGROUND_WIDTH; j++) {
 					if (field2[i][j]===0) field2[i][j] = 1;
 				}
 			}
-		}
+		}*/
 		
 		return (
 		  <div className="App">
@@ -130,7 +134,7 @@ class App extends Component {
 			<div className='App__main'>
 				<div className='App__playground'>
 					<div className='App__player_name_block'>
-						<img src={bot}/>
+						<img src={bot} alt='bot'/>
 						{!gameStarted &&
 							<input 
 								type='text'
@@ -151,7 +155,7 @@ class App extends Component {
 				
 				<div className='App__playground'>
 					<div className='App__player_name_block'>
-						<img src={human}/>
+						<img src={human} alt='bot'/>
 						{!gameStarted &&
 							<input 
 								type='text'

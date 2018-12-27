@@ -93,8 +93,15 @@ body {
 }
 
 .Element__missed {
-	background: #1478a3;
-	border:1px solid black;
+	background: #34a0cf;
+	padding: 8px; 
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.Element img {
+	margin:0 auto;
 }
 
 .Element__ship {

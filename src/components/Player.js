@@ -86,32 +86,27 @@ export class HumanPlayer extends Player{
 		//it's destroyed ship
 		if (data >= ONE_SHOOT * 3) return false;
 		
-		//console.log(player.playground);
-		
 		player.playground.increaseValue(i0, j0, ONE_SHOOT);
 		
-		//console.log('Human makes turn', player, data, i0, j0);
-				
 		player.playground.clearFog(i0, j0);
-		//console.log(player.playground, data);
 		
 		//check if player missed
-		if (data === 0) {
+		if (data === 1) {
 			//console.log('You missed');
 			return true;
 		}
 		
 		//determine the ship player shooted
-		const shipID = data % ONE_SHOOT - 1;
+		const shipID = data % ONE_SHOOT - 2;
 		const ship = player.playground.getShips()[shipID];
-			//console.log('check ship', ship);
 		
 		//ship was damaged
 		if (data > 0) {
 			//hit ship & check it
 			if (!ship.hitShip()) {
 				//destroy ship
-				player.playground.destroyShip(shipID + 1);
+				player.playground.destroyShip(shipID);
+				player.playground.clearFogAroundShip(shipID);
 			}
 			
 			//bot skips its turn
