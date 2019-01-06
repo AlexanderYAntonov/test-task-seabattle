@@ -193,6 +193,12 @@ export class Playground {
 		
 		this.ships.forEach(item => {
 			counter++;
+			//rotate ship random times (0-3)
+			let rotateCount = Math.floor(Math.random() * 4);
+			for (let i = 0; i < rotateCount; i++){
+				item.rotate();
+			}
+			
 			//find place for ship
 			const {i, j} = this.findPlaceForShip(item);
 			if (i === -1 || j === -1) return false;

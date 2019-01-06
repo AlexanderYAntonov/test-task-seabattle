@@ -157,7 +157,7 @@ class App extends Component {
 		  <div className="App">
 			<header className='App__header'>Battleships</header> 
 			
-			{win === '' && <div onClick={this.onClickStartButton} className='App__start_button'>Start</div>}
+			{!gameStarted && win === '' && <div onClick={this.onClickStartButton} className='App__start_button'>Start</div>}
 
 			{win === '' &&<div className='App__main'>
 					

@@ -29,11 +29,6 @@ export class Ship {
 		return this.isAlive;
 	}
 	
-	//set ship alive status to false
-	/*destroyShip() {
-		this.isAlive = false;
-	}*/
-	
 	//is ship still alive
 	getLiveStatus() {
 		return this.isAlive;
@@ -64,6 +59,23 @@ export class Ship {
 		return this.yCoordinate;
 	}
 	
+	//rotate ship counter-clockwise for 90 degrees
+	rotate() {
+		let width = this.getWidth();
+		let height = this.getHeight();
+		
+		//make a rotate copy of shape
+		let arr = [];
+		for (let i = 0; i < width; i++) {
+			arr[i] = [];
+			for (let j = 0; j < height; j++) {
+				arr[i][j] = this.shape[j][width-i-1];
+			}
+		}
+		
+		//set shape to new state
+		this.shape = arr;
+	}
 }
 
 //minimal ship
@@ -121,10 +133,3 @@ export class TriangleShip extends Ship {
 
     }	
 }
-
-/*
-export default TriangleShip;
-export default SquareShip;
-export default LineShip;
-export default DotShip;
-export default Ship;*/
